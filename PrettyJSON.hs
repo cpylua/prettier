@@ -8,7 +8,7 @@ import Data.Char (ord)
 import Data.Bits (shiftR, (.&.))
 
 import SimpleJSON (JValue(..))
-import Prettify (Doc, (<>), (</>), char, line, empty, double, fsep, fcat, hcat, punctuate, text, nest, pretty)
+import Prettify (Doc, (<>), (</>), (</+>), char, line, empty, double, fsep, fcat, hcat, punctuate, text, nest, pretty)
   
 renderJValue :: JValue -> Doc
 renderJValue (JBool True) = text "true"
@@ -21,8 +21,9 @@ renderJValue (JObject o) = series '{' '}' field o
   where field (k,v) = escape k <> text ": " <> renderJValue v
         
 series :: Char -> Char -> (a -> Doc) -> [a] -> Doc
-series open close f xs = encloseIndent open close 2 $ (fsep . punctuate (char ',') $ init fields) <> last fields
-  where fields = map f xs
+series open close f ds = encloseIndent open close 2 (fsep butLast <> last items)
+  where items = punctuate (char ',') $ map f ds
+        butLast = init items
 
 escape :: String -> Doc
 escape = enclose '"' '"' . hcat . map escapeChar
